@@ -1,0 +1,24 @@
+{
+  "name": "interview_task",
+  "version": "1.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start_server": "cd server && node index.js",
+    "start_client": "cd client && npm start",
+    "setup": "cd server && npm i && cd ../client && npm i && cd ..",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/serjio1905/interview_task.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/serjio1905/interview_task/issues"
+  },
+  "homepage": "https://github.com/serjio1905/interview_task#readme",
+  "dependencies": {
+  }
+}

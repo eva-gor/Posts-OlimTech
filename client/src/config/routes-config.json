@@ -1,0 +1,23 @@
+{
+    "always": [
+        {
+            "to": "/",
+            "label": "Home",
+            "order": 1
+        }
+    ],
+    "authenticated": [
+        {
+            "to": "/signout",
+            "label": "Sign out",
+            "order": 1000
+        }
+    ],
+    "noauthenticated": [
+        {
+            "to": "/signin",
+            "label": "Sign In",
+            "order": 500
+        }
+    ]
+}
