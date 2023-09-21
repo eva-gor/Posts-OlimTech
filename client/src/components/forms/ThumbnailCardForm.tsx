@@ -1,9 +1,5 @@
 import { Box } from "@mui/material";
 import PostType from "../model/PostType";
-
-type Props ={
-    post : PostType
-}
 import * as React from 'react';
 import { styled } from '@mui/material/styles';
 import Card from '@mui/material/Card';
@@ -15,7 +11,7 @@ import Collapse from '@mui/material/Collapse';
 import Avatar from '@mui/material/Avatar';
 import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import { red } from '@mui/material/colors';
+import { purple} from '@mui/material/colors';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ShareIcon from '@mui/icons-material/Share';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -35,7 +31,9 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
     duration: theme.transitions.duration.shortest,
   }),
 }));
-
+type Props ={
+  post : PostType
+}
 const ThumbnailCardForm: React.FC<Props> =({post})=>{
   const [expanded, setExpanded] = React.useState(false);
 
@@ -43,12 +41,11 @@ const ThumbnailCardForm: React.FC<Props> =({post})=>{
     setExpanded(!expanded);
   };
 
-  return (
-    <Card sx={{ maxWidth: 345 }}>
+  return <Card >
       <CardHeader
         avatar={
-          <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-            R
+          <Avatar sx={{ bgcolor: purple[500] }} aria-label="recipe">
+            {post.username!.toString().charAt(0)}
           </Avatar>
         }
         action={
@@ -56,13 +53,13 @@ const ThumbnailCardForm: React.FC<Props> =({post})=>{
             <MoreVertIcon />
           </IconButton>
         }
-        title={`Posted by ${post.username}`}
+        title={`Posted by ${post.username?.username}`}
         subheader= {new Date(post.date).toDateString()}
       />
       <CardMedia
         component="img"
         height="194"
-        image={post.imageSrc ? post.imageSrc : "/static/images/default.webp"}
+        image={post.imageSrc ? post.imageSrc : "/static/images/default.jpg"}
         alt="Image"
       />
       <CardContent>
@@ -101,7 +98,6 @@ const ThumbnailCardForm: React.FC<Props> =({post})=>{
         </CardContent>
       </Collapse>
     </Card>
-  );
 }
 
 export default ThumbnailCardForm;

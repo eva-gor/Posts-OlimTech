@@ -1,5 +1,4 @@
-import {Box, ThemeProvider, createTheme } from '@mui/material';
-import { purple } from '@mui/material/colors';
+import {Box } from '@mui/material';
 import SearchByKeywordForm from './SearchByKeywordForm';
 
 

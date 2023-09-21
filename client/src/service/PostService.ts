@@ -5,7 +5,7 @@ import UserData from "../components/model/UserData";
 import IPostsService from "./IPostsService";
 import { Observable, Subscriber } from "rxjs";
 
-const POLLER_INTERVAL = 3000;
+const POLLER_INTERVAL = 30000000;
 class CachePosts {
     cacheString: string = '';
     set(posts: PostType[]): void {
@@ -28,12 +28,9 @@ class CachePosts {
 function getUrl(baseUrl: string, tale: string): string {
     return `${baseUrl}${tale}`;
 }
-async function fetchRequest(url: string, method: string, body: Object, errorText?: string): Promise<any> {
-    const response = await fetch(url, {
-        method: method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-    });
+async function fetchRequest(url: string, method: string, body?: Object, errorText?: string): Promise<any> {
+    const init:RequestInit | undefined = body ? {method, body} as RequestInit : {method};
+    const response = await fetch(url, init);
     const { success, result } = await response.json();
     if (!success) {
         throw 'Server is unavailable';
@@ -46,17 +43,18 @@ async function fetchRequest(url: string, method: string, body: Object, errorText
 async function fetchPostsOnPage(url: string, page: number): Promise<GetPostsByPageType | string> {
     let res: GetPostsByPageType | string;
     const response = await fetch(getUrl(url, `/post/page/${page}`), {
-        method: 'GET',
-        headers: { "Content-Type": "application/json" }
+        method: 'GET'
     });
-    const responseJson: { success: boolean, resp: GetPostsByPageType } = await response.json();
-    const totalPages = responseJson.resp.totalPages || 0;
+    const responseJson = await response.json();
+
+    const totalPages = responseJson.totalPages || 1;
     if (!responseJson.success) {
         res = "Server is unavailable";
     } else if (totalPages < page) {
         res = `Total number of pages ${totalPages} less than the given page number`;
     } else {
-        res = responseJson.resp;
+        delete responseJson.success;
+        res = {...responseJson};
     }
     return res;
 }
@@ -80,7 +78,7 @@ export default class PostService implements IPostsService {
         return await fetchRequest(getUrl(this.baseUrl, '/post'), 'POST', { title, username: userData!.username });
     }
     async deletePost(id: number): Promise<PostType> {
-        return await fetchRequest(getUrl(this.baseUrl, `/post/${id}`), 'DELETE', {}, `No post with id ${id} was found`);
+        return await fetchRequest(getUrl(this.baseUrl, `/post/${id}`), 'DELETE', `No post with id ${id} was found`);
     }
     async updatePost(id: number, title: string, likes: string[], dislikes: string[]): Promise<PostType> {
         return await fetchRequest(getUrl(this.baseUrl, `/post/${id}`), 'PUT', { title, likes, dislikes }, `No post with id ${id} was found`);
@@ -116,11 +114,11 @@ export default class PostService implements IPostsService {
         return await fetchRequest(getUrl(this.baseUrl, `/comment/${commentId}`), 'PUT', { text, likes, dislikes }, `No comment with id ${commentId} was found`);
     }
     async deleteComment(commentId: number): Promise<CommentType> {
-        return await fetchRequest(getUrl(this.baseUrl, `/comment/${commentId}`), 'DELETE', {}, `No comment with id ${commentId} was found`);
+        return await fetchRequest(getUrl(this.baseUrl, `/comment/${commentId}`), 'DELETE', `No comment with id ${commentId} was found`);
     }
 
     async searchByKeyword(keyword: string): Promise<PostType[]> {
-        return await fetchRequest(getUrl(this.baseUrl, `/post/search/${keyword}`), 'GET', {});
+        return await fetchRequest(getUrl(this.baseUrl, `/post/search/${keyword}`), 'GET');
     }
     async uploadPostPicture(id: number, file: string): Promise<PostType> {
         const imageUpload = await loadImageByUrl(file);

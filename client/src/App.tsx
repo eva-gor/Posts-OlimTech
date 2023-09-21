@@ -9,7 +9,6 @@ import './App.css'
 import { useSelectorAuth, useSelectorCode } from "./redux/store";
 import { RouteType } from "./components/navigators/Navigator";
 import { useDispatch } from "react-redux";
-import { authActions } from "./redux/slices/authSlice";
 import { codeActions } from "./redux/slices/codeSlice";
 import routesConfig from './config/routes-config.json';
 import Home from "./components/pages/Home";
@@ -82,7 +81,7 @@ const App: React.FC = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<NavigatorDispatcher routes={routes} />}>
-          <Route index element={<Home />} />
+          <Route index element={<Home/>} />
           <Route path="signin" element={<SignIn />} />
           <Route path="signout" element={<SignOut />} />
           <Route path="/*" element={<NotFound />} />
