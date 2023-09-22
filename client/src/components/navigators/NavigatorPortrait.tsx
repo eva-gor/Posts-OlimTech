@@ -31,7 +31,7 @@ const NavigatorPortrait: React.FC<{ routes: RouteType[] }> = ({ routes }) => {
         return routes.map(i => <ListItem onClick={toggleOpen} 
             component={Link} to={i.to} key={i.to}>{i.label}</ListItem>)
     }
-    return <Box sx={{ marginTop: "55px"}}>
+    return <Box sx={{ marginTop: "55px"}} >
         <AppBar >
             <Toolbar sx={{background:"#F4E8FF"}}>
                 <Typography sx={{ width: "100%", textAlign: "center", fontSize: "1.5em", color: 'grey'}}>

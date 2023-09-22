@@ -9,12 +9,15 @@ import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import Slide from '@mui/material/Slide';
 import { TransitionProps } from '@mui/material/transitions';
-import { Box, TextField } from '@mui/material';
+import { Box, CardHeader, TextField } from '@mui/material';
 import { postService } from '../../config/service-config';
 import InputResult from '../model/InputResult';
 import { useSelectorAuth } from '../../redux/store';
 import { codeActions } from '../../redux/slices/codeSlice';
 import { useDispatch } from 'react-redux';
+import PostType from '../model/PostType';
+import { useState } from 'react';
+import DragNDrop from '../common/DragNDropModule';
 
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
@@ -24,18 +27,20 @@ const Transition = React.forwardRef(function Transition(
 ) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
-const defaultPost = { title: '', image: '' };
+
 type Props = {
     openDialog: boolean;
-    goBack: () => void
+    goBack: () => void,
+    postExtisted?: PostType
 }
-const AddPostForm: React.FC<Props> = ({ openDialog, goBack }) => {
+const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }) => {
+    const defaultTitle = postExtisted ? postExtisted.title : '';
     const userData = useSelectorAuth();
     const dispatch = useDispatch();
-
-    const [post, setPost] = React.useState<{ title: string, image: string }>(defaultPost);
+    const [imgFile, setImgFile] = useState<File>();
+    const [postTitle, setPosttitle] = useState<string>(defaultTitle);
     const handleClose = () => {
-        setPost(defaultPost);
+        setPosttitle(defaultTitle);
         goBack();
     };
     const handleSave = async () => {
@@ -44,19 +49,21 @@ const AddPostForm: React.FC<Props> = ({ openDialog, goBack }) => {
             message: "Server unavailable, repeat later on"
         }
         try {
-            const response = await postService.createPost(post.title, userData);
-            if (post.image){
+            if (!postTitle) throw 'Fill title';
+            const response = postExtisted ? await postService.updatePost(postExtisted.id, postTitle, postExtisted.likes, postExtisted.dislikes)
+                : await postService.createPost(postTitle, userData);
+            if (imgFile) {
                 const postId = response.id;
-                await postService.uploadPostPicture(postId, post.image);
+                await postService.uploadPostPicture(postId, imgFile);
             }
-            inputResult = { status: 'success', message: 'Post is added' }
+            inputResult = { status: 'success', message: postExtisted ? 'Post is updated' : 'Post is added' }
+            goBack();
         } catch (err) {
             inputResult = { status: 'error', message: typeof err === 'string' ? err : 'Error' }
         }
         dispatch(codeActions.set(inputResult));
-        handleClose();
     };
-
+    const setFileFn = function (file: File) { setImgFile(file) };
     return (
         <div>
             <Dialog
@@ -76,14 +83,25 @@ const AddPostForm: React.FC<Props> = ({ openDialog, goBack }) => {
                             <CloseIcon />
                         </IconButton>
                         <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-                            Add Post
+                            {postExtisted ? 'Update Post' : 'Add Post'}
                         </Typography>
                         <Button autoFocus color="inherit" onClick={handleSave}>
                             save
                         </Button>
                     </Toolbar>
                 </AppBar>
-                <Box component="form" onSubmit={handleSave} noValidate sx={{ mt: 1 }} marginLeft='10px' marginRight='10px'>
+                {
+                    postExtisted &&
+                    <Box>
+                        <CardHeader
+                            title={`Posted by ${postExtisted.username}`}
+                            subheader={new Date(+postExtisted.date).toDateString()}
+                        />
+                    </Box>
+                }
+                <Box component="form" onSubmit={handleSave} noValidate
+                    sx={{ mt: 1 }}
+                    marginLeft='10px' marginRight='10px' textAlign='center'>
                     <TextField
                         color='secondary'
                         margin="normal"
@@ -95,23 +113,14 @@ const AddPostForm: React.FC<Props> = ({ openDialog, goBack }) => {
                         id="title"
                         variant='standard'
                         multiline
-                        onChange={event=> setPost({...post, title: event.currentTarget.value})}
+                        onChange={event => setPosttitle(event.currentTarget.value)}
+                        defaultValue={postTitle}
                     />
-
-                    <TextField
-                        fullWidth
-                        variant="standard"
-                        color='secondary'
-                        label="Image URL"
-                        name='image'
-                        value={post.image.substring(post.image.lastIndexOf('\\'))}
-                        onChange={event => { const newVal = event.target.value; setPost({ ...post, image: newVal }) }}
-                    />
-                    {post.image && <img src={post.image} alt="No image" style={{ width: '30vw', aspectRatio: 'auto/1' }} />}
-
+                    {!postExtisted && DragNDrop(setFileFn)}
+                    {imgFile && <img src={window.URL.createObjectURL(imgFile)} alt="No image" style={{ maxHeight: '50vh', maxWidth: '100vw', objectFit: "contain" }} />}
                 </Box>
             </Dialog>
         </div>
     );
 }
-export default AddPostForm;
+export default AddUpdatePostForm;

@@ -9,7 +9,7 @@ const SignIn: React.FC = () => {
         const data = new FormData(event.currentTarget);
         const username: string = data.get('username')! as string;
         if (username.trim()) {
-            dispatch(authActions.set({ username }));
+            dispatch(authActions.set(username));
         }
     };
 

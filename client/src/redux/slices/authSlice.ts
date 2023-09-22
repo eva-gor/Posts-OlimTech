@@ -1,17 +1,12 @@
 import {createSlice} from '@reduxjs/toolkit';
-import UserData from '../../components/model/UserData';
 const AUTH_ITEM = "auth-item";
-function getUserData(): UserData {
-    const userDataJson = localStorage.getItem(AUTH_ITEM) || '';
-    let res: UserData = null;
-    if(userDataJson) {
-        res = JSON.parse(userDataJson);
-    }
+function getUserData(): {username: string} {
+    const userData = localStorage.getItem(AUTH_ITEM) || '';
+    let res: {username: string} = {username: userData || ''};
     return res;
 }
-const initialState: {userData: UserData} = {
-userData: getUserData()
-}
+const initialState: {username: string} =  getUserData();
+
 const authSlice = createSlice({
     initialState,
     name: "authState",
@@ -19,17 +14,14 @@ const authSlice = createSlice({
         set: (state, data) => {
             
             if (data.payload) {
-                localStorage.setItem(AUTH_ITEM, JSON.stringify(data.payload));
-                state.userData = data.payload;
+                localStorage.setItem(AUTH_ITEM, data.payload);
+                state.username = data.payload;
             }
-            
-            
         },
         reset: (state) => {
-            state.userData = null;
+            state.username = '';
             localStorage.removeItem(AUTH_ITEM);
         }
-
     }
 });
 export const authActions = authSlice.actions;

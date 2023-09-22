@@ -12,7 +12,6 @@ import { useDispatch } from "react-redux";
 import { codeActions } from "./redux/slices/codeSlice";
 import routesConfig from './config/routes-config.json';
 import Home from "./components/pages/Home";
-import UserData from "./components/model/UserData";
 import { StatusType } from "./components/model/StatusType";
 import CodeType from "./components/model/CodeType";
 import { purple } from "@mui/material/colors";
@@ -38,10 +37,10 @@ const theme = createTheme({
 });
 
 type RouteTypeOrder = RouteType & { order?: number }
-function getRoutes(userData: UserData): RouteType[] {
+function getRoutes(username: string): RouteType[] {
   const res: RouteTypeOrder[] = [];
   res.push(...always);
-  if (userData) {
+  if (username) {
     res.push(...authenticated);
   } else {
     res.push(...noauthenticated);
@@ -53,19 +52,19 @@ function getRoutes(userData: UserData): RouteType[] {
     }
     return res
   });
-  if (userData) {
-    res[res.length - 1].label = userData.username;
-  }
+  if (username) {
+    res[res.length - 1].label = username;
+  } 
 
   return res
 }
 const App: React.FC = () => {
-  const userData = useSelectorAuth();
+  const username = useSelectorAuth();
   const code = useSelectorCode();
   const dispatch = useDispatch<any>();
 
   const [alertMessage, severity] = useMemo(() => codeProcessing(), [code]);
-  const routes = useMemo(() => getRoutes(userData), [userData]);
+  const routes = useMemo(() => getRoutes(username), [username]);
 
   function codeProcessing(): [string, StatusType] {
     const res: [string, StatusType] = [code.message, 'success'];

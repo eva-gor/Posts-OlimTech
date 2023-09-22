@@ -1,10 +1,9 @@
 import CommentType from "./CommentType";
-import UserData from "./UserData";
 
 type PostType = {
     id: number,
     title: string,
-    username: UserData,
+    username: string,
     likes: string[],
     dislikes: string[],
     date: number,

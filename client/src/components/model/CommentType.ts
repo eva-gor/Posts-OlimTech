@@ -1,10 +1,8 @@
-import UserData from "./UserData";
-
 type CommentType = {
     id: number,
     text: string,
     postId: number,
-    username: UserData,
+    username: string,
     likes: string[],
     dislikes: string[],
     date: string,

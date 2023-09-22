@@ -12,7 +12,7 @@ export function useDispatchCode() {
     return (error: string, successMessage: string) => {
         let code: CodeType = CodeType.OK;
         let message: string = '';
-        code = error.includes('unavailable') ? CodeType.SERVER_ERROR : CodeType.UNKNOWN;
+        if (error) code = error.includes('unavailable') ? CodeType.SERVER_ERROR : CodeType.UNKNOWN;
         message = error;
         dispatch(codeActions.set({ code, message: message || successMessage }))
     }

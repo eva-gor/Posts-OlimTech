@@ -2,7 +2,7 @@ import { Box, Button, InputBase, alpha, styled } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import SearchIcon from '@mui/icons-material/Search';
 
-const TIMEOUT = 500;
+const TIMEOUT = 1000;
 const Search = styled('div')(({ theme }) => ({
     borderRadius: theme.shape.borderRadius,
     backgroundColor: alpha(theme.palette.common.white, 0.15),
@@ -50,19 +50,32 @@ let timeoutId: ReturnType<typeof setTimeout>;
 const SearchByKeywordForm: React.FC<Props> = ({ getKeyword }) => {
     const [search, setSearch] = useState<string>('');
     const wasSentFl = useRef<boolean>(false);
-    useEffect(()=>{
-        if (!wasSentFl.current){
+    useEffect(() => {
+        if (!wasSentFl.current) {
             clearTimeout(timeoutId);
-            timeoutId = setTimeout(()=>getKeyword(search), TIMEOUT);    //debounce
+            timeoutId = setTimeout(() => getKeyword(search), TIMEOUT);    //debounce
         }
-    },[search]);
+    }, [search]);
 
+    useEffect(() => {
+        const keyDownHandler = (event: { key: string; preventDefault: () => void; }) => {   
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            searchHandler();
+          }
+        };
+    
+        document.addEventListener('keydown', keyDownHandler);
+    
+        return () => {
+          document.removeEventListener('keydown', keyDownHandler);
+        };
+      }, []);
     function searchHandler() {
         getKeyword(search);
-        setSearch('');
         wasSentFl.current = true;
     }
-   
+
     return <Search>
         <Box display='flex' justifyContent='center'>
             <Button color='secondary' onClick={searchHandler}>

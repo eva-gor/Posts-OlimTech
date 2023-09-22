@@ -20,6 +20,11 @@ body{
   pointer-events: none;
 }
 
+.dropbox {
+  background-color: rgba(244, 234, 154, 0.333);
+  border-color: blueviolet;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;

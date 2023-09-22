@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import { codeReducer } from "./slices/codeSlice";
 import CodePayload from "../components/model/CodePayload";
 import { authReducer } from "./slices/authSlice";
-import UserData from "../components/model/UserData";
 
 export const store = configureStore({
     reducer: {
@@ -13,7 +12,7 @@ export const store = configureStore({
 });
 
 export function useSelectorAuth() {
-    return useSelector<any, UserData>(state => state.authState.userData);
+    return useSelector<any, string>(state => state.authState.username);
 }
 
 export function useSelectorCode() {

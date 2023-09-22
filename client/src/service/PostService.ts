@@ -1,11 +1,10 @@
 import CommentType from "../components/model/CommentType";
 import GetPostsByPageType from "../components/model/GetPostsByPageType";
 import PostType from "../components/model/PostType";
-import UserData from "../components/model/UserData";
 import IPostsService from "./IPostsService";
 import { Observable, Subscriber } from "rxjs";
 
-const POLLER_INTERVAL = 30000000;
+const POLLER_INTERVAL = 3000;
 class CachePosts {
     cacheString: string = '';
     set(posts: PostType[]): void {
@@ -28,43 +27,27 @@ class CachePosts {
 function getUrl(baseUrl: string, tale: string): string {
     return `${baseUrl}${tale}`;
 }
-async function fetchRequest(url: string, method: string, body?: Object, errorText?: string): Promise<any> {
-    const init:RequestInit | undefined = body ? {method, body} as RequestInit : {method};
-    const response = await fetch(url, init);
-    const { success, result } = await response.json();
-    if (!success) {
-        throw 'Server is unavailable';
-    }
-    if (!result) {
-        throw errorText || 'Not found';
-    }
-    return result;
-}
+
 async function fetchPostsOnPage(url: string, page: number): Promise<GetPostsByPageType | string> {
     let res: GetPostsByPageType | string;
-    const response = await fetch(getUrl(url, `/post/page/${page}`), {
-        method: 'GET'
-    });
-    const responseJson = await response.json();
+    try {
+        const response = await fetch(getUrl(url, `/post/page/${page}`), {
+            method: 'GET'
+        });
+        const responseJson = await response.json();
 
-    const totalPages = responseJson.totalPages || 1;
-    if (!responseJson.success) {
-        res = "Server is unavailable";
-    } else if (totalPages < page) {
-        res = `Total number of pages ${totalPages} less than the given page number`;
-    } else {
-        delete responseJson.success;
-        res = {...responseJson};
-    }
-    return res;
-}
-async function loadImageByUrl(url_image: string) {
-    try{
-        const response = await fetch(url_image);
-        if (!response.ok) throw 'Chose another image';
-        return response.blob();
-    } catch (e){
-        throw 'Chose another image';
+        const totalPages = responseJson.totalPages || 1;
+        if (!responseJson.success) {
+            res = "Error. Try it later";
+        } else if (totalPages < page) {
+            res = `Total number of pages ${totalPages} less than the given page number`;
+        } else {
+            delete responseJson.success;
+            res = { ...responseJson };
+        }
+        return res;
+    } catch (e) {
+        throw 'Server is unavailable. Try it later'
     }
 }
 
@@ -74,14 +57,24 @@ export default class PostService implements IPostsService {
 
     constructor(private baseUrl: string) { }
 
-    async createPost(title: string, userData: UserData): Promise<PostType> {
-        return await fetchRequest(getUrl(this.baseUrl, '/post'), 'POST', { title, username: userData!.username });
+    async createPost(title: string, username: string): Promise<PostType> {
+        const init ={
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, username })
+        };
+        return await fetchPosts(getUrl(this.baseUrl, '/post'), init);
     }
     async deletePost(id: number): Promise<PostType> {
-        return await fetchRequest(getUrl(this.baseUrl, `/post/${id}`), 'DELETE', `No post with id ${id} was found`);
+        return await fetchPosts(getUrl(this.baseUrl, `/post/${id}`), {method: 'DELETE'}, 'Post is not found');
     }
     async updatePost(id: number, title: string, likes: string[], dislikes: string[]): Promise<PostType> {
-        return await fetchRequest(getUrl(this.baseUrl, `/post/${id}`), 'PUT', { title, likes, dislikes }, `No post with id ${id} was found`);
+        const init = {
+            method: 'PUT',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, likes, dislikes })
+        };
+        return await fetchPosts(getUrl(this.baseUrl, `/post/${id}`), init, 'Post is not found');
     }
     private sibscriberNext(url: string, page: number, subscriber: Subscriber<GetPostsByPageType | string>): void {
         fetchPostsOnPage(url, page).then(posts => {
@@ -107,35 +100,61 @@ export default class PostService implements IPostsService {
         }
         return this.observable;
     }
-    async createComment(text: string, postId: number, userData: UserData): Promise<CommentType> {
-        return await fetchRequest(getUrl(this.baseUrl, '/comment'), 'POST', { text, postId, username: userData!.username });
+    async createComment(text: string, postId: number, username: string): Promise<CommentType> {
+        const init = {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, postId, username })
+        };
+        return await fetchPosts(getUrl(this.baseUrl, '/comment'), init);
     }
     async updateComment(commentId: number, text: string, likes: string[], dislikes: string[]): Promise<CommentType> {
-        return await fetchRequest(getUrl(this.baseUrl, `/comment/${commentId}`), 'PUT', { text, likes, dislikes }, `No comment with id ${commentId} was found`);
+        const init = {
+            method: 'PUT',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, likes, dislikes })
+        };
+        return await fetchPosts(getUrl(this.baseUrl, `/comment/${commentId}`), init, 'Comment is not found');
     }
     async deleteComment(commentId: number): Promise<CommentType> {
-        return await fetchRequest(getUrl(this.baseUrl, `/comment/${commentId}`), 'DELETE', `No comment with id ${commentId} was found`);
+        return await fetchPosts(getUrl(this.baseUrl, `/comment/${commentId}`), { method: 'DELETE' }, 'Comment is not found');
     }
-
     async searchByKeyword(keyword: string): Promise<PostType[]> {
-        return await fetchRequest(getUrl(this.baseUrl, `/post/search/${keyword}`), 'GET');
+        return await fetchPosts(getUrl(this.baseUrl, `/post/search/${keyword}`), { method: 'GET' })
     }
-    async uploadPostPicture(id: number, file: string): Promise<PostType> {
-        const imageUpload = await loadImageByUrl(file);
+    async uploadPostPicture(id: number, file: any): Promise<PostType> {
         const formData = new FormData();
-        formData.append("picture", imageUpload);
-        const response = await fetch(getUrl(this.baseUrl, `/post/${id}/picture`), {
-            method: "POST",
-            body: formData
-        });
+        formData.append("picture", file);
+        try {
+            const response = await fetch(getUrl(this.baseUrl, `/post/${id}/picture`), {
+                method: "POST",
+                body: formData
+            });
+            const resp = await response.json();
+            if (resp.message) {
+                throw resp.message;
+            }
+            const { success, result } = resp;
+            if (!success || !result) {
+                throw 'Error while loading';
+            }
+            return result;
+        }
+        catch (e) {
+            throw e? e.toString() : 'Server is not available. Try later'
+        }
+    }
+}
+
+async function fetchPosts(url: string, init: RequestInit, errorString?: string) {
+    try {
+        const response = await fetch(url, init);
         const resp = await response.json();
-        if (resp.message){
-            throw resp.message;
-        }
-        const { success, result } = resp;
-        if (!success || !result) {
-            throw 'Error while loading';
-        }
-        return result;
+        if (!resp.success || (!errorString && !resp.result)) throw "Service doesn't work. Try later";
+        if (errorString && !resp.result) throw errorString;
+        return resp.result;
+    }
+    catch (e) {
+        throw 'Server is not available. Try later'
     }
 }
