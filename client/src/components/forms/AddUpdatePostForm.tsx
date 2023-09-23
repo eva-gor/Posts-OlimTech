@@ -10,15 +10,14 @@ import Slide from '@mui/material/Slide';
 import { TransitionProps } from '@mui/material/transitions';
 import { Box, CardHeader, TextField } from '@mui/material';
 import { postService } from '../../config/service-config';
-import InputResult from '../model/InputResult';
 import { useSelectorAuth } from '../../redux/store';
-import { codeActions } from '../../redux/slices/codeSlice';
-import { useDispatch } from 'react-redux';
 import PostType from '../model/PostType';
 import { useState } from 'react';
 import DragNDrop from '../common/DragNDropModule';
 import { useDispatchCode } from '../../hooks/hooks';
+import config from '../../config/config-params.json'
 
+const defaultPic = config.defaultPic;
  
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
@@ -116,9 +115,13 @@ const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }
                         onChange={event => setPosttitle(event.currentTarget.value)}
                         defaultValue={postTitle}
                     />
-                    {!postExtisted && DragNDrop(setFileFn)}
-                    {imgFile && <img src={window.URL.createObjectURL(imgFile)} alt="No image"
-                        style={{ maxHeight: '50vh', maxWidth: '100vw', objectFit: "contain" }} />}
+                    {DragNDrop(setFileFn)}
+                    {imgFile ? <img src={window.URL.createObjectURL(imgFile)} alt="No image"
+                        style={{ maxHeight: '50vh', maxWidth: '100vw', objectFit: "contain" }} />
+                    : postExtisted && postExtisted.imageSrc ? <img src={postExtisted.imageSrc} alt="No image"
+                    style={{ maxHeight: '50vh', maxWidth: '100vw', objectFit: "contain" }}/> :  
+                    postExtisted && <img src={defaultPic} alt="No image"
+                    style={{ maxHeight: '50vh', maxWidth: '100vw', objectFit: "contain" }}/>}
                 </Box>
             </Dialog>
         </div>

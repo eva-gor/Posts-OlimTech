@@ -27,6 +27,9 @@ import ArticleIcon from '@mui/icons-material/Article';
 import likesDislikesAction from "../../utils/likesFn";
 import DetailedCardForm from "./DetailedCardForm";
 import Popover from '@mui/material/Popover';
+import config from '../../config/config-params.json'
+
+const defaultPic = config.defaultPic;
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -108,7 +111,7 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
         <CardMedia
           component="img"
           height='70vh'
-          image={post.imageSrc ? post.imageSrc : "/static/images/default.jpg"}
+          image={post.imageSrc ? post.imageSrc : defaultPic}
           alt="Image"
           sx={{ padding: "1em 1em 0 1em", objectFit: "contain" }}
         />
