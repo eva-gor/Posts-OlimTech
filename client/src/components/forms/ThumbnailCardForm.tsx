@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Divider } from "@mui/material";
 import PostType from "../model/PostType";
 import { styled } from '@mui/material/styles';
 import Card from '@mui/material/Card';
@@ -58,7 +58,7 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [expanded, setExpanded] = useState(false);
-  const [action, setAction] = useState<{ delete: boolean, update: boolean }>({ delete: false, update: false });
+  const [action, setAction] = useState<{ delete: boolean, update: boolean, details: boolean }>({ delete: false, update: false, details: false });
   const username = useSelectorAuth();
   const [openCardDetails, setOpenCardDetails] = useState<boolean>(false);
 
@@ -68,13 +68,15 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const allowActions = username && post.username === username;
+  const allowActions = !!username && username === post.username;
 
   function onCloseContextMenu(type: string) {
     if (type === 'delete') {
       setAction({ ...action, delete: true });
     } else if (type === 'update') {
       setAction({ ...action, update: true });
+    } else if (type === 'details') {
+      setAction({ ...action, details: true });
     }
     setAnchorEl(null);
   }
@@ -88,11 +90,12 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
   }
   return (
     <Box>
-      <DetailedCardForm onClose={() => setOpenCardDetails(false)} open={openCardDetails} post={post} />
-      <ThumbnailMenu anchorEl={anchorEl} closeFn={(type: string) => onCloseContextMenu(type)} />
+      <DetailedCardForm onClose={() => setAction({ ...action, details: false })} open={action.details} post={post} />
+      <ThumbnailMenu anchorEl={anchorEl} closeFn={(type: string) => onCloseContextMenu(type)}
+        actions={{ details: true, update: allowActions, delete: allowActions }} />
       <AddUpdatePostForm openDialog={action.update} goBack={setAction.bind(undefined, { ...action, update: false })} postExtisted={post} />
-      <DeletePostCommentForm open={action.delete} handleClose={setAction.bind(undefined, { ...action, delete: false })} post={post} isPost={true}/>
-      <Card >
+      <DeletePostCommentForm open={action.delete} handleClose={setAction.bind(undefined, { ...action, delete: false })} post={post} isPost={true} />
+      <Card onDoubleClick={() => setAction({ ...action, details: true })} >
         <CardHeader
           avatar={
             <Avatar sx={{ bgcolor: purple[500] }} aria-label="recipe">
@@ -100,7 +103,6 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
             </Avatar>
           }
           action={
-            allowActions &&
             <IconButton aria-label="settings" onClick={handleMenuClick}>
               <MoreVertIcon />
             </IconButton>
@@ -110,10 +112,10 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
         />
         <CardMedia
           component="img"
-          height='70vh'
           image={post.imageSrc ? post.imageSrc : defaultPic}
+          height='250'
           alt="Image"
-          sx={{ padding: "1em 1em 0 1em", objectFit: "contain" }}
+          sx={{ padding: 0, objectFit: "contain" }}
         />
         <CardContent>
           <Typography variant="body2" color="text.secondary"
@@ -123,12 +125,15 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
               WebkitBoxOrient: 'vertical',
               WebkitLineClamp: 4,
             }}>
-            <p> <i style={{ color: post.likes.length - post.dislikes.length >0 ? 'green' : post.likes.length - post.dislikes.length === 0? 'grey' : 'red' }}>
-                Rating:{post.likes.length - post.dislikes.length}
-              </i>
-            </p>
             {post.title}
           </Typography>
+          <Divider sx={{ marginTop: '5px' }} />
+          <div style={{ textAlign: 'left', display: 'flex', justifyContent: 'space-between' }}>
+            <div >Commentaries: {post.comments?.length || 0}</div>
+            <i style={{ color: post.likes.length - post.dislikes.length > 0 ? 'green' : post.likes.length - post.dislikes.length === 0 ? 'grey' : 'red' }}>
+              Rating:{post.likes.length - post.dislikes.length}
+            </i>
+          </div>
         </CardContent>
         <CardActions disableSpacing>
           {username && post.username != username && <div>
@@ -139,47 +144,8 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
               {post.likes.includes(username) ? <ThumbUpIcon /> : <ThumbUpOffAltIcon />}
             </IconButton>
           </div>}
-          <ExpandMore
-            expand={expanded}
-            onClick={handleExpandClick}
-            aria-expanded={expanded}
-            aria-label="show more"
-          >
-            <ExpandMoreIcon onClick={handleExpandClick} />
-          </ExpandMore>
         </CardActions>
-        <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <CardContent>
-            <Typography display='flex' justifyContent='space-between'>
-              <div>Commentaries: {post.comments?.length || 0}</div>
-              <IconButton onClick={() => setOpenCardDetails(true)}
-                onMouseEnter={handlePopoverOpen}
-                onMouseLeave={handlePopoverClose}>
-                <ArticleIcon />
-              </IconButton>
-              <Popover
-                id="mouse-over-popover"
-                sx={{
-                  pointerEvents: 'none'
-                }}
-                open={openPopOp}
-                anchorEl={anchorElPopOp}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'left',
-                }}
-                onClose={handlePopoverClose}
-                disableRestoreFocus
-              >
-                <Typography sx={{ p: 1, backgroundColor: "beige" }}>Details</Typography>
-              </Popover>
-            </Typography>
-          </CardContent>
-        </Collapse>
+
       </Card>
     </Box>
   )

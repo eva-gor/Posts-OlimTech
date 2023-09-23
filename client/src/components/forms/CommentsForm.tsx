@@ -23,6 +23,7 @@ const CommentsForm: React.FC<Props> = ({ com }) => {
     const username = useSelectorAuth();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [action, setAction] = useState<{ delete: boolean, update: boolean }>({ delete: false, update: false });
+    const allowActions = !!username && username === com!.username;
 
     const dislikePost = async (com: CommentType) => {
         const { ar1, ar2 } = likesDislikesAction(com!.dislikes, com!.likes, username);
@@ -53,7 +54,7 @@ const CommentsForm: React.FC<Props> = ({ com }) => {
         }
     }
     return <li>
-        <ThumbnailMenu anchorEl={anchorEl} closeFn={(type: string) => onCloseContextMenu(type)} />
+        <ThumbnailMenu anchorEl={anchorEl} closeFn={(type: string) => onCloseContextMenu(type)} actions={{details:false, update: allowActions, delete: allowActions}}/>
         <DeletePostCommentForm open={action.delete} handleClose={setAction.bind(undefined, { ...action, delete: false })} post={com} isPost={false} />
         <Divider ><Chip label={com!.username} sx={{ padding: 2, marginTop: '5px', marginBottom: '3px' }} /></Divider>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>

@@ -1,5 +1,5 @@
-import { Box, Button, Grid, TextField, Typography } from "@mui/material";
-import React, { useState } from "react";
+import { Box, Button, Grid, TextField } from "@mui/material";
+import React from "react";
 import { authActions } from "../../redux/slices/authSlice";
 import { useDispatch } from "react-redux";
 const SignIn: React.FC = () => {
@@ -12,8 +12,7 @@ const SignIn: React.FC = () => {
             dispatch(authActions.set(username));
         }
     };
-
-
+    
     return <Box sx={{ textAlign: 'center' }} mt={10}>
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <Grid container justifyContent={'center'} spacing={3}>

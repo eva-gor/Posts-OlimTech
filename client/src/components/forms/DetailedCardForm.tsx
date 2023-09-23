@@ -6,12 +6,18 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import CloseIcon from '@mui/icons-material/Close';
-import { AppBar, Divider, IconButton, Paper, Slide, Toolbar, Typography } from "@mui/material";
+import { AppBar, Divider, Grid, IconButton, Paper, Slide, Toolbar, Typography } from "@mui/material";
 import { TransitionProps } from "@mui/material/transitions";
 import AddCommentForm from "./AddCommentForm";
 import { useSelectorAuth } from "../../redux/store";
 import { useRef } from "react";
 import CommentsForm from "./CommentsForm";
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
+import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
+import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
+import { postService } from "../../config/service-config";
+import likesDislikesAction from "../../utils/likesFn";
 
 type Props = {
     open: boolean,
@@ -32,6 +38,7 @@ const DetailedCardForm: React.FC<Props> = ({ open, onClose, post }) => {
     const scroll: DialogProps['scroll'] = 'paper';
 
     const descriptionElementRef = React.useRef<HTMLElement>(null);
+    const username = useSelectorAuth();
     React.useEffect(() => {
         if (open) {
             const { current: descriptionElement } = descriptionElementRef;
@@ -44,7 +51,15 @@ const DetailedCardForm: React.FC<Props> = ({ open, onClose, post }) => {
     const handleScrollClick = () => {
         ref.current?.scrollIntoView({ behavior: 'smooth' });
     };
-    
+    const dislikePost = async () => {
+        const { ar1, ar2 } = likesDislikesAction(post.dislikes, post.likes, username);
+        await postService.updatePost(post.id, post.title, ar2, ar1);
+    }
+    const likePost = async () => {
+        const { ar1, ar2 } = likesDislikesAction(post.likes, post.dislikes, username);
+        await postService.updatePost(post.id, post.title, ar1, ar2);
+    }
+
     return <Dialog
         open={open}
         onClose={onClose}
@@ -77,32 +92,46 @@ const DetailedCardForm: React.FC<Props> = ({ open, onClose, post }) => {
                 ref={descriptionElementRef}
                 tabIndex={-1}
             >
-                <Paper elevation={3} sx={{ margin: '10px', padding: '10px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <div>
-                            <i style={{ color: post.likes.length - post.dislikes.length > 0 ? 'green' : post.likes.length - post.dislikes.length === 0 ? 'grey' : 'red' }}>
-                                Rating:{post.likes.length - post.dislikes.length}
-                            </i>
-                            &#160; &#160;
-                        <i>(Likes: {post.likes.length},  &#160; Dislikes: {post.dislikes.length})</i>
-                        </div>
-                        <Button onClick={handleScrollClick} > Go to commentaries </Button>
-                    </div>
-                </Paper>
-                <p>
-                    {post.imageSrc && <img src={post.imageSrc} alt="Image"
-                        style={{ maxWidth: '100vw', maxHeight: '30vh', objectFit: "contain", float: 'left', margin: '10px' }} />}
+                <Grid item container>
+                    <Grid xs={12}>
+                        <Paper elevation={3} sx={{ margin: '10px', padding: '10px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <div>
+                                    <i style={{ color: post.likes.length - post.dislikes.length > 0 ? 'green' : post.likes.length - post.dislikes.length === 0 ? 'grey' : 'red' }}>
+                                        Rating:{post.likes.length - post.dislikes.length}
+                                    </i>
+                                    &#160; &#160;
+                                    <i>(Likes: {post.likes.length},  &#160; Dislikes: {post.dislikes.length})</i>
+                                </div>
+                                <Button onClick={handleScrollClick} > Go to commentaries </Button>
+                                {username && post.username != username && <div>
+                                    <IconButton onClick={dislikePost}>
+                                        {post.dislikes.includes(username) ? <ThumbDownIcon /> : <ThumbDownOffAltIcon />}
+                                    </IconButton>
+                                    <IconButton onClick={likePost}>
+                                        {post.likes.includes(username) ? <ThumbUpIcon /> : <ThumbUpOffAltIcon />}
+                                    </IconButton>
+                                </div>}
+                            </div>
+                        </Paper>
+                        <p>
+                            {post.imageSrc && <img src={post.imageSrc} alt="Image"
+                                style={{ maxWidth: '100vw', maxHeight: '30vh', objectFit: "contain", float: 'left', margin: '10px' }} />}
 
-                    {post.title}
-                </p>
-                <Divider><DialogTitle ref={ref}>Commentaries:</DialogTitle></Divider>
+                            {post.title}
+                        </p>
+                    </Grid>
+                    <Grid xs={12}>
+                        <Divider><DialogTitle ref={ref}>Commentaries:</DialogTitle></Divider>
 
-                <AddCommentForm post={post} />
-                {post.comments &&
-                    <ul style={{ listStyleType: 'none' }}>
-                        {post.comments!.sort((c1, c2) => +c2!.date - +c1!.date).map(com => <CommentsForm com={com}/>)}
-                    </ul>
-                }
+                        <AddCommentForm post={post} />
+                        {post.comments &&
+                            <ul style={{ listStyleType: 'none' }}>
+                                {post.comments!.sort((c1, c2) => +c2!.date - +c1!.date).map(com => <CommentsForm com={com} />)}
+                            </ul>
+                        }
+                    </Grid>
+                </Grid>
             </DialogContentText>
         </DialogContent>
     </Dialog>
