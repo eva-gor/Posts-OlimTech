@@ -4,7 +4,7 @@ import PostType from "../components/model/PostType";
 import IPostsService from "./IPostsService";
 import { Observable, Subscriber } from "rxjs";
 
-const POLLER_INTERVAL = 3000;
+const POLLER_INTERVAL = 1000;
 const POSTS_PER_PAGE = 9;
 
 function getSlice(page: number, array: PostType[]): GetPostsByPageType {

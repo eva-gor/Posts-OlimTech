@@ -17,6 +17,7 @@ import { useDispatch } from 'react-redux';
 import PostType from '../model/PostType';
 import { useState } from 'react';
 import DragNDrop from '../common/DragNDropModule';
+import { useDispatchCode } from '../../hooks/hooks';
 
  
 const Transition = React.forwardRef(function Transition(
@@ -37,7 +38,7 @@ type Props = {
 const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }) => {
     const defaultTitle = postExtisted ? postExtisted.title : '';
     const username = useSelectorAuth();
-    const dispatch = useDispatch();
+    const dispatch = useDispatchCode();
     const [imgFile, setImgFile] = useState<File>();
     const [postTitle, setPosttitle] = useState<string>(defaultTitle);
     const handleClose = () => {
@@ -45,10 +46,8 @@ const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }
         goBack();
     };
     const handleSave = async () => {
-        let inputResult: InputResult = {
-            status: 'error',
-            message: "Server unavailable, repeat later on"
-        }
+        let error='';
+        let ok ='';
         try {
             if (!postTitle) throw 'Fill title';
             const response = postExtisted ? await postService.updatePost(postExtisted.id, postTitle, postExtisted.likes, postExtisted.dislikes)
@@ -57,12 +56,12 @@ const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }
                 const postId = response.id;
                 await postService.uploadPostPicture(postId, imgFile);
             }
-            inputResult = { status: 'success', message: postExtisted ? 'Post is updated' : 'Post is added' }
+            ok = postExtisted ? 'Post is updated' : 'Post is added' ;
             goBack();
         } catch (err) {
-            inputResult = { status: 'error', message: typeof err === 'string' ? err : 'Error' }
+            error = typeof err === 'string' ? err : 'Error' ;
         }
-        dispatch(codeActions.set(inputResult));
+        dispatch(error, ok);
     };
     const setFileFn = function (file: File) { setImgFile(file) };
     return (

@@ -1,4 +1,4 @@
-import { Chip, ListItemText, IconButton, Divider } from "@mui/material";
+import { Chip, ListItemText, IconButton, Divider, TextField, Button } from "@mui/material";
 import PostType from "../model/PostType";
 import likesDislikesAction from "../../utils/likesFn";
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
@@ -9,15 +9,17 @@ import { useSelectorAuth } from "../../redux/store";
 import CommentType from "../model/CommentType";
 import { postService } from "../../config/service-config";
 import EditNoteIcon from '@mui/icons-material/EditNote';
-import { useState } from "react";
+import { useRef, useState } from "react";
 import ThumbnailMenu from "./ThumbnailMenu";
-import AddUpdatePostForm from "./AddUpdatePostForm";
 import DeletePostCommentForm from "./DeletePostCommentForm";
+import { useDispatchCode } from "../../hooks/hooks";
 
 type Props = {
     com: CommentType
 }
 const CommentsForm: React.FC<Props> = ({ com }) => {
+    const [ newComment, setNewComment] = useState<string>(com!.text);
+    const dispatch = useDispatchCode();
     const username = useSelectorAuth();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [action, setAction] = useState<{ delete: boolean, update: boolean }>({ delete: false, update: false });
@@ -42,9 +44,16 @@ const CommentsForm: React.FC<Props> = ({ com }) => {
         setAnchorEl(null);
     }
 
+    async function updateComment(text: string){
+        try{
+            await postService.updateComment(com!.id, text, com!.likes, com!.dislikes);
+            setAction({...action, update: false});
+        } catch (e) {
+            dispatch(typeof e === 'string' ? e : 'Update failed','');
+        }
+    }
     return <li>
         <ThumbnailMenu anchorEl={anchorEl} closeFn={(type: string) => onCloseContextMenu(type)} />
-        {/* <AddUpdatePostForm openDialog={action.update} goBack={setAction.bind(undefined, { ...action, update: false })} postExtisted={post} /> */}
         <DeletePostCommentForm open={action.delete} handleClose={setAction.bind(undefined, { ...action, delete: false })} post={com} isPost={false} />
         <Divider ><Chip label={com!.username} sx={{ padding: 2, marginTop: '5px', marginBottom: '3px' }} /></Divider>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -60,7 +69,19 @@ const CommentsForm: React.FC<Props> = ({ com }) => {
                 </IconButton>
             }
         </div>
-        <ListItemText primary={com!.text} />
+
+        {action.update ?
+            <div>
+                <TextField
+                    fullWidth
+                    multiline
+                    defaultValue={com!.text}
+                    onChange={event => setNewComment(event.currentTarget.value)}
+                />
+                <Button onClick={updateComment.bind(undefined, newComment)}>Update</Button>
+            </div>
+            : <ListItemText primary={com!.text} />}
+
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             {username && com!.username != username ? <div>
                 <IconButton onClick={() => dislikePost(com)}>

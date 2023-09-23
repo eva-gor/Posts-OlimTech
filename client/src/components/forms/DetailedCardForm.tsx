@@ -10,9 +10,6 @@ import { AppBar, Divider, IconButton, Paper, Slide, Toolbar, Typography } from "
 import { TransitionProps } from "@mui/material/transitions";
 import AddCommentForm from "./AddCommentForm";
 import { useSelectorAuth } from "../../redux/store";
-import likesDislikesAction from "../../utils/likesFn";
-import { postService } from "../../config/service-config";
-import CommentType from "../model/CommentType";
 import { useRef } from "react";
 import CommentsForm from "./CommentsForm";
 
@@ -33,7 +30,6 @@ const Transition = React.forwardRef(function Transition(
 const DetailedCardForm: React.FC<Props> = ({ open, onClose, post }) => {
     const ref = useRef<any>(null);
     const scroll: DialogProps['scroll'] = 'paper';
-    const username = useSelectorAuth();
 
     const descriptionElementRef = React.useRef<HTMLElement>(null);
     React.useEffect(() => {
