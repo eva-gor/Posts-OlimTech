@@ -1,1 +1,1 @@
-[]
+[{"id":1,"text":"I think its good","postId":44,"username":"charm_may","likes":[],"dislikes":[],"date":"1695412469402"},{"id":2,"text":"I feel good","postId":44,"username":"charm_may","likes":[],"dislikes":[],"date":"1695412513387"},{"id":3,"text":"I want pizza","postId":44,"username":"charm_may","likes":["Eva"],"dislikes":[],"date":"1695412702414"},{"id":4,"text":"it's funny","postId":44,"username":"charm_may","likes":[],"dislikes":[],"date":"1695412772480"},{"id":5,"text":"New comment","postId":44,"username":"Eva","likes":[],"dislikes":[],"date":"1695443492889"}]

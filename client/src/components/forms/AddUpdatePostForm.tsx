@@ -1,7 +1,6 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import Divider from '@mui/material/Divider';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
@@ -19,6 +18,7 @@ import PostType from '../model/PostType';
 import { useState } from 'react';
 import DragNDrop from '../common/DragNDropModule';
 
+ 
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
         children: React.ReactElement;
@@ -33,9 +33,10 @@ type Props = {
     goBack: () => void,
     postExtisted?: PostType
 }
+
 const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }) => {
     const defaultTitle = postExtisted ? postExtisted.title : '';
-    const userData = useSelectorAuth();
+    const username = useSelectorAuth();
     const dispatch = useDispatch();
     const [imgFile, setImgFile] = useState<File>();
     const [postTitle, setPosttitle] = useState<string>(defaultTitle);
@@ -51,7 +52,7 @@ const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }
         try {
             if (!postTitle) throw 'Fill title';
             const response = postExtisted ? await postService.updatePost(postExtisted.id, postTitle, postExtisted.likes, postExtisted.dislikes)
-                : await postService.createPost(postTitle, userData);
+                : await postService.createPost(postTitle, username);
             if (imgFile) {
                 const postId = response.id;
                 await postService.uploadPostPicture(postId, imgFile);
@@ -72,7 +73,7 @@ const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }
                 onClose={handleClose}
                 TransitionComponent={Transition}
             >
-                <AppBar sx={{ position: 'relative' }}>
+                <AppBar sx={{ position: 'sticky' }}>
                     <Toolbar>
                         <IconButton
                             edge="start"
@@ -96,13 +97,14 @@ const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }
                         <CardHeader
                             title={`Posted by ${postExtisted.username}`}
                             subheader={new Date(+postExtisted.date).toDateString()}
+                            
                         />
                     </Box>
                 }
-                <Box component="form" onSubmit={handleSave} noValidate
-                    sx={{ mt: 1 }}
+                <Box sx={{ mt: 1 }}
                     marginLeft='10px' marginRight='10px' textAlign='center'>
                     <TextField
+                        multiline
                         color='secondary'
                         margin="normal"
                         required
@@ -112,12 +114,12 @@ const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }
                         type="title"
                         id="title"
                         variant='standard'
-                        multiline
                         onChange={event => setPosttitle(event.currentTarget.value)}
                         defaultValue={postTitle}
                     />
                     {!postExtisted && DragNDrop(setFileFn)}
-                    {imgFile && <img src={window.URL.createObjectURL(imgFile)} alt="No image" style={{ maxHeight: '50vh', maxWidth: '100vw', objectFit: "contain" }} />}
+                    {imgFile && <img src={window.URL.createObjectURL(imgFile)} alt="No image"
+                        style={{ maxHeight: '50vh', maxWidth: '100vw', objectFit: "contain" }} />}
                 </Box>
             </Dialog>
         </div>

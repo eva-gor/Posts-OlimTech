@@ -17,10 +17,11 @@ const SignIn: React.FC = () => {
     return <Box sx={{ textAlign: 'center' }} mt={10}>
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <Grid container justifyContent={'center'} spacing={3}>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={0} sm={1} lg={3} xl={4}></Grid>
+                <Grid item xs={12} sm={8} lg={6} xl={4}>
                     <TextField
                         color='secondary'
-                        margin="normal"
+                        margin="dense"
                         required
                         fullWidth
                         name="username"
@@ -29,7 +30,8 @@ const SignIn: React.FC = () => {
                         id="username"
                     />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={0} sm={1} lg={3} xl={4}></Grid>
+                <Grid item xs={12} sm={8} lg={6} xl={4}>
                     <Button
                         type="submit"
                         fullWidth

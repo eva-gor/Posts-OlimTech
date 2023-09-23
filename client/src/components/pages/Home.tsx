@@ -18,7 +18,7 @@ function getSlice(page: number, array: PostType[]): GetPostsByPageType {
 }
 
 const Home: React.FC = () => {
-    const [pkRes, setPkRes] = useState<{ page: number, keyword: string}>({ page: 1, keyword: '' });
+    const [pkRes, setPkRes] = useState<{ page: number, keyword: string }>({ page: 1, keyword: '' });
     const [openAddPostForm, setOpenAddPostForm] = useState<boolean>(false);
     const allPosts = useSelectorPostsByPage(pkRes.page);
     const dispatch = useDispatchCode();
@@ -59,10 +59,10 @@ const Home: React.FC = () => {
     }, [pkRes.page]);
 
     function getThumbnails() {
-        return Array.isArray(result) ? result.map(post => <Grid item xs={12} lg={6} xl={4}><ThumbnailCardForm post={post} /></Grid>) :[];
+        return Array.isArray(result) ? result.map(post => <Grid item xs={12} lg={6} xl={4}><ThumbnailCardForm post={post} /></Grid>) : [];
     }
-    return <Box width='100%' sx={{ textAlign: "center"}} key='hpBox'>
-        <HeaderForm getKeyword={keyword => setPkRes({ ...pkRes, keyword })} setOpenAddPostForm={()=>setOpenAddPostForm(true)}/>
+    return <Box width='100%' sx={{ textAlign: "center" }} key='hpBox'>
+        <HeaderForm getKeyword={keyword => setPkRes({ ...pkRes, keyword })} setOpenAddPostForm={() => setOpenAddPostForm(true)} />
         <AddUpdatePostForm openDialog={openAddPostForm} goBack={() => setOpenAddPostForm(false)} />
         {getThumbnails() && getThumbnails().length === 0 ? <label style={{ textAlign: 'center', color: 'lightgrey', fontSize: '3rem', marginTop: '10vh', fontFamily: 'cursive' }}>No items</label> :
             <Grid container spacing={2}>

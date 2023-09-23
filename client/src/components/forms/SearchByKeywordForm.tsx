@@ -57,20 +57,20 @@ const SearchByKeywordForm: React.FC<Props> = ({ getKeyword }) => {
         }
     }, [search]);
 
-    useEffect(() => {
-        const keyDownHandler = (event: { key: string; preventDefault: () => void; }) => {   
-          if (event.key === 'Enter') {
-            event.preventDefault();
-            searchHandler();
-          }
-        };
+    // useEffect(() => {
+    //     const keyDownHandler = (event: { key: string; preventDefault: () => void; }) => {   
+    //       if (event.key === 'Enter') {
+    //         event.preventDefault();
+    //         searchHandler();
+    //       }
+    //     };
     
-        document.addEventListener('keydown', keyDownHandler);
+    //     document.addEventListener('keydown', keyDownHandler);
     
-        return () => {
-          document.removeEventListener('keydown', keyDownHandler);
-        };
-      }, []);
+    //     return () => {
+    //       document.removeEventListener('keydown', keyDownHandler);
+    //     };
+    //   }, []);
     function searchHandler() {
         getKeyword(search);
         wasSentFl.current = true;
