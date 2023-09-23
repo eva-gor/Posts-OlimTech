@@ -9,57 +9,14 @@ import GetPostsByPageType from "../model/GetPostsByPageType";
 import ThumbnailCardForm from "../forms/ThumbnailCardForm";
 import Pagination from '@mui/material/Pagination';
 
-const POSTS_PER_PAGE = 9;
-function getSlice(page: number, array: PostType[]): GetPostsByPageType {
-    const total = array.length;
-    const totalPages = Math.ceil(total / POSTS_PER_PAGE);
-    const result = array.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE);
-    return { total, totalPages, page, result };
-}
 
 const Home: React.FC = () => {
     const [pkRes, setPkRes] = useState<{ page: number, keyword: string }>({ page: 1, keyword: '' });
     const [openAddPostForm, setOpenAddPostForm] = useState<boolean>(false);
-    const allPosts = useSelectorPostsByPage(pkRes.page);
-    const dispatch = useDispatchCode();
-    const searchResult = useRef<PostType[]>([]);
-    const [result, setResult] = useState<PostType[]>(allPosts.result);
-    useEffect(() => {
-        const set = async () => {
-            setPkRes({ ...pkRes, page: 1 });
-            try {
-                if (pkRes.keyword) {
-                    searchResult.current = await postService.searchByKeyword(pkRes.keyword);
-                    setResult(getSlice(pkRes.page, searchResult.current).result);
-                } else {
-                    setResult(allPosts.result);
-                }
-            } catch (e: any) {
-                setResult([]);
-                dispatch(typeof e === 'string' ? e : 'Searching by keyword failed', '');
-            }
-        }
-        set();
-    }, [pkRes.keyword, allPosts]);
-
-    useEffect(() => {
-        const set = async () => {
-            try {
-                if (pkRes.keyword) {
-                    setResult(getSlice(pkRes.page, searchResult.current).result);
-                } else {
-                    setResult(allPosts.result);
-                }
-            } catch (e: any) {
-                setResult([]);
-                dispatch(typeof e === 'string' ? e : 'Fetch failed', '');
-            }
-        }
-        set();
-    }, [pkRes.page]);
+    const allPosts = useSelectorPostsByPage(pkRes.page, pkRes.keyword);
 
     function getThumbnails() {
-        return Array.isArray(result) ? result.map(post => <Grid item xs={12} lg={6} xl={4}><ThumbnailCardForm post={post} /></Grid>) : [];
+        return Array.isArray(allPosts.result) ? allPosts.result.map(post => <Grid item xs={12} lg={6} xl={4}><ThumbnailCardForm post={post} /></Grid>) : [];
     }
     return <Box width='100%' sx={{ textAlign: "center" }} key='hpBox'>
         <HeaderForm getKeyword={keyword => setPkRes({ ...pkRes, keyword })} setOpenAddPostForm={() => setOpenAddPostForm(true)} />

@@ -1,6 +1,6 @@
 import { useDispatch } from "react-redux";
 import { codeActions } from "../redux/slices/codeSlice";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Subscription } from "rxjs";
 import CodeType from "../components/model/CodeType";
 import PostType from "../components/model/PostType";
@@ -17,12 +17,14 @@ export function useDispatchCode() {
         dispatch(codeActions.set({ code, message: message || successMessage }))
     }
 }
-export function useSelectorPostsByPage(page: number) {
+export function useSelectorPostsByPage(page: number, keyword:string) {
     const dispatch = useDispatchCode();
     const [posts, setPosts] = useState<GetPostsResponseType>(defaultGetPostsByPageType);
+    postService.setKeyword(keyword);
+    postService.setPage(page);
     useEffect(() => {
-        const subscription: Subscription = postService.getPostsByPage(page)
-            .subscribe({
+        const subscription: Subscription = postService.getPostsByPageKeyword(page, keyword)
+            .subscribe({                
                 next(postsObj: GetPostsResponseType | string) {
                     let errorMessage: string = '';
                     if (typeof postsObj === 'string') {

@@ -6,6 +6,7 @@ import Modal from '@mui/material/Modal';
 import PostType from '../model/PostType';
 import { useDispatchCode } from '../../hooks/hooks';
 import { postService } from '../../config/service-config';
+import CommentType from '../model/CommentType';
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -20,19 +21,26 @@ const style = {
 };
 
 type Props = {
-    post: PostType,
+    post: PostType | CommentType,
     open: boolean,
-    handleClose: () => void
+    handleClose: () => void,
+    isPost: boolean
 }
 
-const DeletePost: React.FC<Props> = ({ post, open, handleClose }) => {
+const DeletePostCommentForm: React.FC<Props> = ({ post, open, handleClose, isPost }) => {
     const dispatch = useDispatchCode();
+    const text ='title' in post! ? post!.title.substring(0, 50) + '...' : post!.text.substring(0, 50) + '...';
     const deleteHandler = async () => {
         let err ='';
         let ok= '';
         try {
-            await postService.deletePost(post.id);
-            ok = 'Post is deleted';
+            if (isPost){
+                await postService.deletePost(post!.id);
+                ok = 'Post is deleted';
+            } else {
+                await postService.deleteComment(post!.id);
+                ok = 'Comment is deleted';
+            }
         } catch (e) {
             err =typeof e === 'string' ? e : 'Deletion failed';
         }
@@ -50,10 +58,10 @@ const DeletePost: React.FC<Props> = ({ post, open, handleClose }) => {
                 <Box sx={{ ...style, width: 400 }}>
                     <h2 id="modal-modal-title">Do you want to delete post:</h2>
                     <p id="modal-modal-description">
-                        {post.title.substring(0, 50) + '...'}
+                        {text}
                     </p>
                     <p>
-                        {new Date(+post.date).toDateString()}
+                        {new Date(+post!.date).toDateString()}
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Button variant="contained" onClick={deleteHandler}>Yes</Button>
@@ -65,4 +73,4 @@ const DeletePost: React.FC<Props> = ({ post, open, handleClose }) => {
     );
 }
 
-export default DeletePost;
+export default DeletePostCommentForm;

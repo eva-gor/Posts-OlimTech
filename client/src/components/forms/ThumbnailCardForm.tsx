@@ -16,7 +16,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ThumbnailMenu from "./ThumbnailMenu";
 import { useSelectorAuth } from "../../redux/store";
 import { useState } from "react";
-import DeletePost from "./DeletePost";
+import DeletePostCommentForm from "./DeletePostCommentForm";
 import AddUpdatePostForm from "./AddUpdatePostForm";
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
@@ -88,7 +88,7 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
       <DetailedCardForm onClose={() => setOpenCardDetails(false)} open={openCardDetails} post={post} />
       <ThumbnailMenu anchorEl={anchorEl} closeFn={(type: string) => onCloseContextMenu(type)} />
       <AddUpdatePostForm openDialog={action.update} goBack={setAction.bind(undefined, { ...action, update: false })} postExtisted={post} />
-      <DeletePost open={action.delete} handleClose={setAction.bind(undefined, { ...action, delete: false })} post={post} />
+      <DeletePostCommentForm open={action.delete} handleClose={setAction.bind(undefined, { ...action, delete: false })} post={post} isPost={true}/>
       <Card >
         <CardHeader
           avatar={
@@ -120,9 +120,9 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
               WebkitBoxOrient: 'vertical',
               WebkitLineClamp: 4,
             }}>
-            <p><i>
-              Rating: {post.likes.length - post.dislikes.length}
-            </i>
+            <p> <i style={{ color: post.likes.length - post.dislikes.length >0 ? 'green' : post.likes.length - post.dislikes.length === 0? 'grey' : 'red' }}>
+                Rating:{post.likes.length - post.dislikes.length}
+              </i>
             </p>
             {post.title}
           </Typography>
