@@ -38,3 +38,25 @@ export function useSelectorPostsByPage(page: number) {
     return posts;
 }
 
+export function useSelectorSearchByKeyword(keyword:string) {
+    const dispatch = useDispatchCode();
+    const [posts, setPosts] = useState<PostType[]>([]);
+    
+    useEffect(() => {
+            const subscription: Subscription = postService.searchByKeyword(keyword)
+                .subscribe({
+                    next(postsObj: PostType[] | string) {
+                        let errorMessage: string = '';
+                        if (typeof postsObj === 'string') {
+                            errorMessage = postsObj;
+                        } else {
+                            setPosts(postsObj);
+                        }
+                        dispatch(errorMessage, '');
+                    }
+                });
+                return () => subscription.unsubscribe();
+    }, []);
+    return posts;
+}
+

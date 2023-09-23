@@ -7,20 +7,37 @@ import { Observable, Subscriber } from "rxjs";
 const POLLER_INTERVAL = 3000;
 class CachePosts {
     cacheString: string = '';
+    cacheSearchString = '';
     set(posts: PostType[]): void {
         this.cacheString = JSON.stringify(posts);
     }
+    setSearch(posts: PostType[]): void {
+        this.cacheSearchString = JSON.stringify(posts);
+    }
+
     reset() {
         this.cacheString = ''
+    }
+    resetSearch() {
+        this.cacheSearchString = ''
     }
     isEqual(posts: PostType[]): boolean {
         return this.cacheString === JSON.stringify(posts)
     }
+    isEqualSearch(posts: PostType[]): boolean {
+        return this.cacheSearchString === JSON.stringify(posts)
+    }
     getCache(): PostType[] {
         return !this.isEmpty() ? JSON.parse(this.cacheString) : []
     }
+    getCacheSearch(): PostType[] {
+        return !this.isEmpty() ? JSON.parse(this.cacheSearchString) : []
+    }
     isEmpty(): boolean {
         return this.cacheString.length === 0;
+    }
+    isEmptysearch(): boolean {
+        return this.cacheSearchString.length === 0;
     }
 }
 
@@ -53,12 +70,13 @@ async function fetchPostsOnPage(url: string, page: number): Promise<GetPostsByPa
 
 export default class PostService implements IPostsService {
     private observable: Observable<GetPostsByPageType | string> | null = null;
+    private observableSearch: Observable<PostType[] | string> | null = null;
     private cachePosts: CachePosts = new CachePosts();
 
     constructor(private baseUrl: string) { }
 
     async createPost(title: string, username: string): Promise<PostType> {
-        const init ={
+        const init = {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ title, username })
@@ -66,7 +84,7 @@ export default class PostService implements IPostsService {
         return await fetchPosts(getUrl(this.baseUrl, '/post'), init);
     }
     async deletePost(id: number): Promise<PostType> {
-        return await fetchPosts(getUrl(this.baseUrl, `/post/${id}`), {method: 'DELETE'}, 'Post is not found');
+        return await fetchPosts(getUrl(this.baseUrl, `/post/${id}`), { method: 'DELETE' }, 'Post is not found');
     }
     async updatePost(id: number, title: string, likes: string[], dislikes: string[]): Promise<PostType> {
         const init = {
@@ -87,6 +105,17 @@ export default class PostService implements IPostsService {
             }
         }).catch(error => subscriber.next(error));
     }
+    private sibscriberNextSearch(url: string, subscriber: Subscriber<PostType[] | string>): void {
+        fetchPosts(url, { method: 'GET' }).then(posts => {
+            if (typeof posts === 'string') {
+                throw 'posts';
+            }
+            if (this.cachePosts.isEmptysearch() || !this.cachePosts.isEqualSearch(posts as PostType[])) {
+                this.cachePosts.set(posts.result as PostType[]);
+                subscriber.next(posts);
+            }
+        }).catch(error => subscriber.next(error));
+    }
 
     getPostsByPage(page: number): Observable<GetPostsByPageType | string> {
         let intervalId: any;
@@ -99,6 +128,19 @@ export default class PostService implements IPostsService {
             })
         }
         return this.observable;
+    }
+
+    searchByKeyword(keyword: string): Observable<PostType[] | string> {
+        let intervalId: any;
+        if (!this.observableSearch) {
+            this.observableSearch = new Observable<PostType[] | string>(subscriber => {
+                this.cachePosts.resetSearch();
+                this.sibscriberNextSearch(getUrl(this.baseUrl, `/post/search/${keyword}`), subscriber);
+                intervalId = setInterval(() => this.sibscriberNextSearch(getUrl(this.baseUrl, `/post/search/${keyword}`), subscriber), POLLER_INTERVAL);
+                return () => clearInterval(intervalId)
+            })
+        }
+        return this.observableSearch;
     }
     async createComment(text: string, postId: number, username: string): Promise<CommentType> {
         const init = {
@@ -119,9 +161,6 @@ export default class PostService implements IPostsService {
     async deleteComment(commentId: number): Promise<CommentType> {
         return await fetchPosts(getUrl(this.baseUrl, `/comment/${commentId}`), { method: 'DELETE' }, 'Comment is not found');
     }
-    async searchByKeyword(keyword: string): Promise<PostType[]> {
-        return await fetchPosts(getUrl(this.baseUrl, `/post/search/${keyword}`), { method: 'GET' })
-    }
     async uploadPostPicture(id: number, file: any): Promise<PostType> {
         const formData = new FormData();
         formData.append("picture", file);
@@ -141,7 +180,7 @@ export default class PostService implements IPostsService {
             return result;
         }
         catch (e) {
-            throw e? e.toString() : 'Server is not available. Try later'
+            throw e ? e.toString() : 'Server is not available. Try later'
         }
     }
 }

@@ -1,10 +1,9 @@
 import { Box, Grid } from "@mui/material";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import HeaderForm from "../forms/HeaderForm";
 import AddUpdatePostForm from "../forms/AddUpdatePostForm";
-import { useDispatchCode, useSelectorPostsByPage } from "../../hooks/hooks";
+import { useDispatchCode, useSelectorPostsByPage, useSelectorSearchByKeyword } from "../../hooks/hooks";
 import PostType from "../model/PostType";
-import { postService } from "../../config/service-config";
 import GetPostsByPageType from "../model/GetPostsByPageType";
 import ThumbnailCardForm from "../forms/ThumbnailCardForm";
 import Pagination from '@mui/material/Pagination';
@@ -21,16 +20,15 @@ const Home: React.FC = () => {
     const [pkRes, setPkRes] = useState<{ page: number, keyword: string }>({ page: 1, keyword: '' });
     const [openAddPostForm, setOpenAddPostForm] = useState<boolean>(false);
     const allPosts = useSelectorPostsByPage(pkRes.page);
+    const searchRes = useSelectorSearchByKeyword(pkRes.keyword);
     const dispatch = useDispatchCode();
-    const searchResult = useRef<PostType[]>([]);
     const [result, setResult] = useState<PostType[]>(allPosts.result);
     useEffect(() => {
         const set = async () => {
             setPkRes({ ...pkRes, page: 1 });
             try {
                 if (pkRes.keyword) {
-                    searchResult.current = await postService.searchByKeyword(pkRes.keyword);
-                    setResult(getSlice(pkRes.page, searchResult.current).result);
+                    setResult(getSlice(pkRes.page, searchRes).result);
                 } else {
                     setResult(allPosts.result);
                 }
@@ -46,7 +44,7 @@ const Home: React.FC = () => {
         const set = async () => {
             try {
                 if (pkRes.keyword) {
-                    setResult(getSlice(pkRes.page, searchResult.current).result);
+                    setResult(getSlice(pkRes.page, searchRes).result);
                 } else {
                     setResult(allPosts.result);
                 }

@@ -14,6 +14,6 @@ export default interface IPostsService{
     updateComment(commentId: number, text: string, likes: string[], dislikes: string[]): Promise<CommentType>
     deleteComment(commentId: number): Promise<CommentType>
 
-    searchByKeyword(keyword: string): Promise<PostType[]>
+    searchByKeyword(keyword: string): Observable<PostType[] | string>
     uploadPostPicture(id: number,  file: any): Promise<PostType>
 }
