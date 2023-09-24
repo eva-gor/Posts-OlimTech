@@ -11,12 +11,14 @@ import { RouteType } from "./components/navigators/Navigator";
 import { useDispatch } from "react-redux";
 import { codeActions } from "./redux/slices/codeSlice";
 import routesConfig from './config/routes-config.json';
+import routesConfigDevelopment from './development/config/routes-config.json';
 import Home from "./components/pages/Home";
 import { StatusType } from "./components/model/StatusType";
 import CodeType from "./components/model/CodeType";
 import { purple } from "@mui/material/colors";
+import GeneratePosts from "./development/forms/GeneratePosts";
 
-const { always, authenticated, noauthenticated } = routesConfig;
+const { always, authenticated, noauthenticated } = process.env.REACT_APP_GENERATE === 'generate' ? routesConfigDevelopment : routesConfig;
 
 const theme = createTheme({
   palette: {
@@ -81,6 +83,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<NavigatorDispatcher routes={routes} />}>
           <Route index element={<Home/>} />
+          <Route path="development" element={<GeneratePosts/>} />
           <Route path="signin" element={<SignIn />} />
           <Route path="signout" element={<SignOut />} />
           <Route path="/*" element={<NotFound />} />

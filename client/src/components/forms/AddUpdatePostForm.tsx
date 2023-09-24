@@ -126,7 +126,7 @@ const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }
                         id="title"
                         variant='standard'
                         onChange={event => setPosttitle(event.currentTarget.value)}
-                        defaultValue={postTitle}
+                        defaultValue={defaultTitle}
                     />
                     {DragNDrop(setFileFn)}
                    {img && <img src={img} alt="No image" style={{ maxHeight: '50vh', maxWidth: '100vw', objectFit: "contain" }} />}
