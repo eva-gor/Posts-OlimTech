@@ -5,9 +5,7 @@ import { AppBar, IconButton, ListItem, Toolbar, Typography, Drawer, List, Box, D
 import { RouteType } from './Navigator';
 
 const NavigatorPortrait: React.FC<{ routes: RouteType[] }> = ({ routes }) => {
-
     const [flOpen, setOpen] = useState<boolean>(false);
-
     const location = useLocation();
     const navigate = useNavigate();
     useEffect(() => {
@@ -16,7 +14,6 @@ const NavigatorPortrait: React.FC<{ routes: RouteType[] }> = ({ routes }) => {
             index = 0;
         }
         navigate(routes[index].to);
-
     }, [routes]);
     function getTitle(): string {
         const route = routes.find(r => r.to === location.pathname)

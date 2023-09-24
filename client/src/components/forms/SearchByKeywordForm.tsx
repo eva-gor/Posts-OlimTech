@@ -57,25 +57,13 @@ const SearchByKeywordForm: React.FC<Props> = ({ getKeyword }) => {
         }
     }, [search]);
 
-    // useEffect(() => {
-    //     const keyDownHandler = (event: { key: string; preventDefault: () => void; }) => {   
-    //       if (event.key === 'Enter') {
-    //         event.preventDefault();
-    //         searchHandler();
-    //       }
-    //     };
-    
-    //     document.addEventListener('keydown', keyDownHandler);
-    
-    //     return () => {
-    //       document.removeEventListener('keydown', keyDownHandler);
-    //     };
-    //   }, []);
     function searchHandler() {
         getKeyword(search);
         wasSentFl.current = true;
     }
-
+    function checkEnter(event: any){
+        if (event.key === 'Enter') searchHandler();
+    }
     return <Search>
         <Box display='flex' justifyContent='center'>
             <Button color='secondary' onClick={searchHandler}>
@@ -86,6 +74,7 @@ const SearchByKeywordForm: React.FC<Props> = ({ getKeyword }) => {
             <StyledInputBase
                 placeholder="Keyword…"
                 inputProps={{ 'aria-label': 'search', min: 0, step: 500 }}
+                onKeyDown={event => checkEnter(event)}
                 onChange={(event: any) => {
                     wasSentFl.current = false;
                     setSearch(event.target.value);

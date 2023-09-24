@@ -15,7 +15,7 @@ const Navigator: React.FC<{ routes: RouteType[] }> = ({ routes }) => {
             index = 0;
         }
         navigate(routes[index].to);
-
+        setValue(index);
     }, [routes]);
 
     function onChangeFn(event: any, newValue: number) {
@@ -24,9 +24,10 @@ const Navigator: React.FC<{ routes: RouteType[] }> = ({ routes }) => {
     function getTabs(): ReactNode {
         return routes.map(r => <Tab component={NavLink} to={r.to} label={r.label} key={r.label}/>)
     }
+    
     return <Box >
         <AppBar sx={{ backgroundColor: "#F4E8FF"}}>
-        <Tabs value={value < routes.length ? value : 0} onChange={onChangeFn} sx={{display:'flex', justifyContent:'space-between'}} 
+        <Tabs value={value} onChange={onChangeFn} sx={{display:'flex', justifyContent:'space-between'}} 
         variant="fullWidth" textColor='secondary' indicatorColor='secondary'>
                 {getTabs()}
             </Tabs>

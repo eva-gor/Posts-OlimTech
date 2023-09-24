@@ -6,12 +6,10 @@ import CardHeader from '@mui/material/CardHeader';
 import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
-import Collapse from '@mui/material/Collapse';
 import Avatar from '@mui/material/Avatar';
 import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { purple } from '@mui/material/colors';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ThumbnailMenu from "./ThumbnailMenu";
 import { useSelectorAuth } from "../../redux/store";
@@ -23,48 +21,20 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import { postService } from "../../config/service-config";
-import ArticleIcon from '@mui/icons-material/Article';
 import likesDislikesAction from "../../utils/likesFn";
 import DetailedCardForm from "./DetailedCardForm";
-import Popover from '@mui/material/Popover';
 import config from '../../config/config-params.json'
 
 const defaultPic = config.defaultPic;
 
-interface ExpandMoreProps extends IconButtonProps {
-  expand: boolean;
-}
-
-const ExpandMore = styled((props: ExpandMoreProps) => {
-  const { expand, ...other } = props;
-  return <IconButton {...other} />;
-})(({ theme, expand }) => ({
-  transform: !expand ? 'rotate(0deg)' : 'rotate(180deg)',
-  marginLeft: 'auto',
-  transition: theme.transitions.create('transform', {
-    duration: theme.transitions.duration.shortest,
-  }),
-}));
 type Props = {
   post: PostType
 }
 const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
-  const [anchorElPopOp, setAnchorElPopOp] = useState<HTMLElement | null>(null);
-  const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElPopOp(event.currentTarget);
-  };
-  const handlePopoverClose = (): void => { setAnchorElPopOp(null); };
-  const openPopOp = Boolean(anchorElPopOp);
-
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [expanded, setExpanded] = useState(false);
   const [action, setAction] = useState<{ delete: boolean, update: boolean, details: boolean }>({ delete: false, update: false, details: false });
   const username = useSelectorAuth();
-  const [openCardDetails, setOpenCardDetails] = useState<boolean>(false);
 
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -88,6 +58,7 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
     const { ar1, ar2 } = likesDislikesAction(post.likes, post.dislikes, username);
     await postService.updatePost(post.id, post.title, ar1, ar2);
   }
+  const actionsVisisbility = username && post.username != username ? 'visible' : 'hidden';
   return (
     <Box>
       <DetailedCardForm onClose={() => setAction({ ...action, details: false })} open={action.details} post={post} />
@@ -118,15 +89,20 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
           sx={{ padding: 0, objectFit: "contain" }}
         />
         <CardContent>
-          <Typography variant="body2" color="text.secondary"
-            sx={{
-              display: '-webkit-box',
-              overflow: 'hidden',
-              WebkitBoxOrient: 'vertical',
-              WebkitLineClamp: 4,
-            }}>
-            {post.title}
-          </Typography>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <Typography variant="body2" color="text.secondary"
+              sx={{
+                display: '-webkit-box',
+                overflow: 'hidden',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 4,
+                height: '80px'
+              }}>
+              <div style={{ textAlign: 'left' }}>
+                {post.title}
+              </div>
+            </Typography>
+          </div>
           <Divider sx={{ marginTop: '5px' }} />
           <div style={{ textAlign: 'left', display: 'flex', justifyContent: 'space-between' }}>
             <div >Commentaries: {post.comments?.length || 0}</div>
@@ -135,15 +111,15 @@ const ThumbnailCardForm: React.FC<Props> = ({ post }) => {
             </i>
           </div>
         </CardContent>
-        <CardActions disableSpacing>
-          {username && post.username != username && <div>
+        <CardActions disableSpacing >
+          <div style={{visibility: actionsVisisbility}}>
             <IconButton onClick={dislikePost}>
               {post.dislikes.includes(username) ? <ThumbDownIcon /> : <ThumbDownOffAltIcon />}
             </IconButton>
             <IconButton onClick={likePost}>
               {post.likes.includes(username) ? <ThumbUpIcon /> : <ThumbUpOffAltIcon />}
             </IconButton>
-          </div>}
+          </div>
         </CardActions>
 
       </Card>

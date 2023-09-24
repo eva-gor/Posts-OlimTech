@@ -80,8 +80,15 @@ const DetailedCardForm: React.FC<Props> = ({ open, onClose, post }) => {
                     <CloseIcon />
                 </IconButton>
                 <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-                    <DialogTitle id="scroll-dialog-title" display='flex' justifyContent='space-between'>
-                        <b>Posted by {post.username}</b> <i>{new Date(+post.date).toDateString()}</i>
+                    <DialogTitle >
+                        <Grid container>
+                            <Grid item xs={12} md={6}>
+                                <b>Posted by {post.username}</b>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <i>{new Date(+post.date).toDateString()}</i>
+                            </Grid>
+                        </Grid>
                     </DialogTitle>
                 </Typography>
             </Toolbar>
@@ -95,13 +102,15 @@ const DetailedCardForm: React.FC<Props> = ({ open, onClose, post }) => {
                 <Grid item container>
                     <Grid xs={12}>
                         <Paper elevation={3} sx={{ margin: '10px', padding: '10px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
                                 <div>
-                                    <i style={{ color: post.likes.length - post.dislikes.length > 0 ? 'green' : post.likes.length - post.dislikes.length === 0 ? 'grey' : 'red' }}>
+                                    <p> <i style={{ color: post.likes.length - post.dislikes.length > 0 ? 'green' : post.likes.length - post.dislikes.length === 0 ? 'grey' : 'red' }}>
                                         Rating:{post.likes.length - post.dislikes.length}
                                     </i>
-                                    &#160; &#160;
-                                    <i>(Likes: {post.likes.length},  &#160; Dislikes: {post.dislikes.length})</i>
+                                    </p>
+                                    <p>
+                                        <i>(Likes: {post.likes.length},  &#160; Dislikes: {post.dislikes.length})</i>
+                                    </p>
                                 </div>
                                 <Button onClick={handleScrollClick} > Go to commentaries </Button>
                                 {username && post.username != username && <div>
@@ -117,14 +126,13 @@ const DetailedCardForm: React.FC<Props> = ({ open, onClose, post }) => {
                         <p>
                             {post.imageSrc && <img src={post.imageSrc} alt="Image"
                                 style={{ maxWidth: '100vw', maxHeight: '30vh', objectFit: "contain", float: 'left', margin: '10px' }} />}
-
-                            {post.title}
+                                {post.title}
                         </p>
                     </Grid>
                     <Grid xs={12}>
                         <Divider><DialogTitle ref={ref}>Commentaries:</DialogTitle></Divider>
 
-                        <AddCommentForm post={post} />
+                        {username && <AddCommentForm post={post} />}
                         {post.comments &&
                             <ul style={{ listStyleType: 'none' }}>
                                 {post.comments!.sort((c1, c2) => +c2!.date - +c1!.date).map(com => <CommentsForm com={com} />)}

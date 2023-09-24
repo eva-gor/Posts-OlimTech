@@ -18,7 +18,7 @@ import { useDispatchCode } from '../../hooks/hooks';
 import config from '../../config/config-params.json'
 
 const defaultPic = config.defaultPic;
- 
+
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
         children: React.ReactElement;
@@ -38,31 +38,44 @@ const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }
     const defaultTitle = postExtisted ? postExtisted.title : '';
     const username = useSelectorAuth();
     const dispatch = useDispatchCode();
-    const [imgFile, setImgFile] = useState<File>();
+    const [imgFile, setImgFile] = useState<File | null>(null);
     const [postTitle, setPosttitle] = useState<string>(defaultTitle);
     const handleClose = () => {
-        setPosttitle(defaultTitle);
         goBack();
     };
     const handleSave = async () => {
-        let error='';
-        let ok ='';
+        let error = '';
+        let ok = '';
+        let id: number | null = null;
         try {
             if (!postTitle) throw 'Fill title';
             const response = postExtisted ? await postService.updatePost(postExtisted.id, postTitle, postExtisted.likes, postExtisted.dislikes)
                 : await postService.createPost(postTitle, username);
+            id = response.id;
             if (imgFile) {
-                const postId = response.id;
-                await postService.uploadPostPicture(postId, imgFile);
+                await postService.uploadPostPicture(id, imgFile);
             }
-            ok = postExtisted ? 'Post is updated' : 'Post is added' ;
+            ok = postExtisted ? 'Post is updated' : 'Post is added';
             goBack();
         } catch (err) {
-            error = typeof err === 'string' ? err : 'Error' ;
+            //rollback - if post was created and error occured on the 2nd operation
+            if (id) await rollBack(id);
+            error = typeof err === 'string' ? err : 'Error';
         }
         dispatch(error, ok);
     };
+
+    async function rollBack(id: number) {
+        try {
+            await postService.deletePost(id);
+        } catch (errRollBack) {
+            dispatch(`Error: post created but picture wasn't loaded ${typeof errRollBack === 'string' && ': ' + errRollBack}`, '')
+        }
+    }
     const setFileFn = function (file: File) { setImgFile(file) };
+    const img = imgFile ? window.URL.createObjectURL(imgFile) :
+        (postExtisted && postExtisted.imageSrc ? postExtisted.imageSrc :
+            postExtisted ? defaultPic: null);
     return (
         <div>
             <Dialog
@@ -95,7 +108,7 @@ const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }
                         <CardHeader
                             title={`Posted by ${postExtisted.username}`}
                             subheader={new Date(+postExtisted.date).toDateString()}
-                            
+
                         />
                     </Box>
                 }
@@ -116,12 +129,7 @@ const AddUpdatePostForm: React.FC<Props> = ({ openDialog, goBack, postExtisted }
                         defaultValue={postTitle}
                     />
                     {DragNDrop(setFileFn)}
-                    {imgFile ? <img src={window.URL.createObjectURL(imgFile)} alt="No image"
-                        style={{ maxHeight: '50vh', maxWidth: '100vw', objectFit: "contain" }} />
-                    : postExtisted && postExtisted.imageSrc ? <img src={postExtisted.imageSrc} alt="No image"
-                    style={{ maxHeight: '50vh', maxWidth: '100vw', objectFit: "contain" }}/> :  
-                    postExtisted && <img src={defaultPic} alt="No image"
-                    style={{ maxHeight: '50vh', maxWidth: '100vw', objectFit: "contain" }}/>}
+                   {img && <img src={img} alt="No image" style={{ maxHeight: '50vh', maxWidth: '100vw', objectFit: "contain" }} />}
                 </Box>
             </Dialog>
         </div>
